@@ -24,6 +24,7 @@ in {
         clippy
       ];
       inherit (self.packages.${pkgs.system}.default) buildInputs;
+      RUST_BACKTRACE = 1;
     };
   });
 };
