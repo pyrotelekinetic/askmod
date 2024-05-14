@@ -23,6 +23,7 @@ in {
         cargo-watch
         clippy
       ];
+      inherit (self.packages.${pkgs.system}.default) buildInputs;
     };
   });
 };
