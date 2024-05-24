@@ -1,24 +1,25 @@
 use iced::executor;
-use iced::widget::{button, column, container};
+use iced::widget::{button, column, container, row};
 use iced::window;
 use iced::{Alignment, Application, Command, Element, Length, Settings, Theme};
+use std::os::unix::process::CommandExt;
+use std::process::Command as StdCommand;
 
 pub fn main() -> iced::Result {
-    Exit::run(Settings::default())
+    State::run(Settings::default())
 }
 
 #[derive(Default)]
-struct Exit {
-    show_confirm: bool,
+struct State {
+    profiles: Vec<(String, String)>,
 }
 
-#[derive(Debug, Clone, Copy)]
-enum Message {
-    Confirm,
-    Exit,
+#[derive(Debug, Clone)]
+struct Message {
+    choice: usize,
 }
 
-impl Application for Exit {
+impl Application for State {
     type Executor = executor::Default;
     type Message = Message;
     type Theme = Theme;
@@ -29,33 +30,32 @@ impl Application for Exit {
     }
 
     fn title(&self) -> String {
-        String::from("Exit - Iced")
+        String::from("askmod")
     }
 
     fn update(&mut self, message: Message) -> Command<Message> {
-        match message {
-            Message::Confirm => window::close(window::Id::MAIN),
-            Message::Exit => {
-                self.show_confirm = true;
-
-                Command::none()
-            }
-        }
+        let command = self.profiles[message.choice].1.clone();
+        Command::batch([
+            window::close(window::Id::MAIN),
+            Command::perform(
+                async move {
+                    StdCommand::new("sh")
+                        .arg("-c")
+                        .arg(format!("exec {}", command))
+                        .exec()
+                },
+                |_| unreachable!(),
+            ),
+        ])
     }
 
     fn view(&self) -> Element<Message> {
-        let content = if self.show_confirm {
-            column![
-                "Are you sure you want to exit?",
-                button("Yes, exit now")
-                    .padding([10, 20])
-                    .on_press(Message::Confirm),
-            ]
-        } else {
-            column![
-                "Click the button to exit",
-                button("Exit").padding([10, 20]).on_press(Message::Exit),
-            ]
+        let content = {
+            column(
+                self.profiles
+                    .iter()
+                    .map(|(name, value)| button(row![name.as_str(), value.as_str(),]).into()),
+            )
         }
         .spacing(10)
         .align_items(Alignment::Center);
