@@ -13,17 +13,27 @@ in {
       version = "0.1.0";
       src = self;
       cargoLock.lockFile = ./Cargo.lock;
+      nativeBuildInputs = [ pkgs.autoPatchelfHook ];
+      buildInputs = [ pkgs.libgcc ];
+      runtimeDependencies = with pkgs; [
+        wayland
+        libxkbcommon
+        vulkan-loader
+      ];
     };
   });
 
   devShells = allSystems (pkgs: {
-    default = pkgs.mkShell {
+    default = let
+      thisPkg = self.packages.${pkgs.system}.default;
+    in pkgs.mkShell {
       nativeBuildInputs = with pkgs; [
         cargo
         cargo-watch
         clippy
       ];
-      inherit (self.packages.${pkgs.system}.default) buildInputs;
+      inherit (thisPkg) buildInputs;
+      LD_LIBRARY_PATH = pkgs.lib.makeLibraryPath thisPkg.runtimeDependencies;
       RUST_BACKTRACE = 1;
     };
   });
