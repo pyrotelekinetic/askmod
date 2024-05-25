@@ -6,7 +6,15 @@ use std::os::unix::process::CommandExt;
 use std::process::Command as StdCommand;
 
 pub fn main() -> iced::Result {
-    State::run(Settings::default())
+    let mut args = std::env::args().skip(1);
+    let mut profiles = Vec::default();
+    while let (Some(name), Some(content)) = (args.next(), args.next()) {
+        profiles.push((name, content));
+    }
+    State::run(Settings {
+        flags: State { profiles },
+        ..Settings::default()
+    })
 }
 
 #[derive(Default)]
@@ -23,10 +31,10 @@ impl Application for State {
     type Executor = executor::Default;
     type Message = Message;
     type Theme = Theme;
-    type Flags = ();
+    type Flags = State;
 
-    fn new(_flags: ()) -> (Self, Command<Message>) {
-        (Self::default(), Command::none())
+    fn new(flags: Self) -> (Self, Command<Message>) {
+        (flags, Command::none())
     }
 
     fn title(&self) -> String {
