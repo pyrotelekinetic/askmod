@@ -30,6 +30,7 @@ in {
       nativeBuildInputs = with pkgs; [
         cargo
         cargo-watch
+        rustfmt
         clippy
       ];
       inherit (thisPkg) buildInputs;
