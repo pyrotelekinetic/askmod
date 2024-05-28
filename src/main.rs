@@ -5,6 +5,16 @@ use iced::{Alignment, Application, Command, Element, Length, Settings, Theme};
 use std::os::unix::process::CommandExt;
 use std::process::Command as StdCommand;
 
+#[derive(Default)]
+struct State {
+    profiles: Vec<(String, String)>,
+}
+
+#[derive(Debug, Clone)]
+struct Message {
+    choice: usize,
+}
+
 pub fn main() -> iced::Result {
     let mut args = std::env::args().skip(1);
     let mut profiles = Vec::default();
@@ -15,16 +25,6 @@ pub fn main() -> iced::Result {
         flags: State { profiles },
         ..Settings::default()
     })
-}
-
-#[derive(Default)]
-struct State {
-    profiles: Vec<(String, String)>,
-}
-
-#[derive(Debug, Clone)]
-struct Message {
-    choice: usize,
 }
 
 impl Application for State {
