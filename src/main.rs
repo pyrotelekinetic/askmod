@@ -62,7 +62,12 @@ impl Application for State {
             column(
                 self.profiles
                     .iter()
-                    .map(|(name, value)| button(row![name.as_str(), value.as_str(),]).into()),
+                    .enumerate()
+                    .map(|(index, (name, value))| {
+                        button(row![name.as_str(), value.as_str(),])
+                            .on_press(Message { choice: index })
+                            .into()
+                    }),
             )
         }
         .spacing(10)
