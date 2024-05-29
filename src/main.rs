@@ -2,7 +2,7 @@ use iced::alignment::Horizontal;
 use iced::executor;
 use iced::widget::{Button, Column, Container, Row, Text};
 use iced::window;
-use iced::{Alignment, Application, Command, Element, Length, Settings, Theme};
+use iced::{Alignment, Application, Command, Element, Font, Length, Settings, Theme};
 use std::os::unix::process::CommandExt;
 use std::process::Command as StdCommand;
 
@@ -84,8 +84,11 @@ impl Application for State {
                     .push(
                         Text::new(value)
                             .horizontal_alignment(Horizontal::Right)
-                            .width(Length::Fill),
+                            .width(Length::Fill)
+                            .font(Font::MONOSPACE)
+                            .size(12),
                     )
+                    .align_items(Alignment::Center)
                     .width(Length::Fill);
                 Button::new(words)
                     .on_press(Message { choice: index })
