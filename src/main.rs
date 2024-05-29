@@ -24,6 +24,16 @@ pub fn main() -> iced::Result {
     }
     State::run(Settings {
         flags: State { profiles },
+        window: window::Settings {
+            position: window::Position::Centered,
+            level: window::Level::AlwaysOnTop,
+            resizable: false,
+            size: iced::Size {
+                width: 300.0,
+                height: 400.0,
+            },
+            ..window::Settings::default()
+        },
         ..Settings::default()
     })
 }
