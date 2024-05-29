@@ -1,5 +1,6 @@
+use iced::alignment::Horizontal;
 use iced::executor;
-use iced::widget::{button, column, container, row};
+use iced::widget::{button, column, container, row, text};
 use iced::window;
 use iced::{Alignment, Application, Command, Element, Length, Settings, Theme};
 use std::os::unix::process::CommandExt;
@@ -41,6 +42,10 @@ impl Application for State {
         String::from("askmod")
     }
 
+    fn theme(&self) -> Theme {
+        Theme::Dark
+    }
+
     fn update(&mut self, message: Message) -> Command<Message> {
         let command = self.profiles[message.choice].1.clone();
         Command::batch([
@@ -64,9 +69,16 @@ impl Application for State {
                     .iter()
                     .enumerate()
                     .map(|(index, (name, value))| {
-                        button(row![name.as_str(), value.as_str(),])
-                            .on_press(Message { choice: index })
-                            .into()
+                        let words = row![
+                            text(name)
+                                .horizontal_alignment(Horizontal::Left)
+                                .width(Length::Fill),
+                            text(value)
+                                .horizontal_alignment(Horizontal::Right)
+                                .width(Length::Fill),
+                        ]
+                        .width(Length::Fill);
+                        button(words).on_press(Message { choice: index }).into()
                     }),
             )
         }
