@@ -1,6 +1,6 @@
 use iced::alignment::Horizontal;
 use iced::executor;
-use iced::widget::{button, column, container, row, text};
+use iced::widget::{Button, Column, Container, Row, Text};
 use iced::window;
 use iced::{Alignment, Application, Command, Element, Length, Settings, Theme};
 use std::os::unix::process::CommandExt;
@@ -73,29 +73,29 @@ impl Application for State {
     }
 
     fn view(&self) -> Element<Message> {
-        let content = {
-            column(
-                self.profiles
-                    .iter()
-                    .enumerate()
-                    .map(|(index, (name, value))| {
-                        let words = row![
-                            text(name)
-                                .horizontal_alignment(Horizontal::Left)
-                                .width(Length::Fill),
-                            text(value)
-                                .horizontal_alignment(Horizontal::Right)
-                                .width(Length::Fill),
-                        ]
-                        .width(Length::Fill);
-                        button(words).on_press(Message { choice: index }).into()
-                    }),
-            )
-        }
+        let content = Column::with_children(self.profiles.iter().enumerate().map(
+            |(index, (name, value))| {
+                let words = Row::new()
+                    .push(
+                        Text::new(name)
+                            .horizontal_alignment(Horizontal::Left)
+                            .width(Length::Fill),
+                    )
+                    .push(
+                        Text::new(value)
+                            .horizontal_alignment(Horizontal::Right)
+                            .width(Length::Fill),
+                    )
+                    .width(Length::Fill);
+                Button::new(words)
+                    .on_press(Message { choice: index })
+                    .into()
+            },
+        ))
         .spacing(10)
         .align_items(Alignment::Center);
 
-        container(content)
+        Container::new(content)
             .width(Length::Fill)
             .height(Length::Fill)
             .padding(20)
