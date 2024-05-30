@@ -119,7 +119,6 @@ impl Application for State {
                     .push(
                         Text::new(name)
                             .horizontal_alignment(Horizontal::Left)
-                            .width(Length::Fill),
                     )
                     .push(
                         Text::new(command)
