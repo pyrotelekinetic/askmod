@@ -53,6 +53,14 @@ pub fn main() -> iced::Result {
     })
 }
 
+fn format_command(x: &str, y: Option<&str>) -> String {
+    if let Some(c) = y {
+        x.replace("{}", c)
+    } else {
+        x.into()
+    }
+}
+
 impl Application for State {
     type Executor = executor::Default;
     type Message = Message;
@@ -87,7 +95,8 @@ impl Application for State {
     }
 
     fn update(&mut self, message: Message) -> Command<Message> {
-        let (_, command) = self.profiles[message.choice].clone();
+        let (_, value) = self.profiles[message.choice].clone();
+        let command = format_command(&value, self.command.as_deref());
         Command::batch([
             window::close(window::Id::MAIN),
             Command::perform(
@@ -105,6 +114,7 @@ impl Application for State {
     fn view(&self) -> Element<Message> {
         let content = Column::with_children(self.profiles.iter().enumerate().map(
             |(index, (name, value))| {
+                let command = format_command(value, self.command.as_ref().map(|_| "%command%"));
                 let words = Row::new()
                     .push(
                         Text::new(name)
@@ -112,7 +122,7 @@ impl Application for State {
                             .width(Length::Fill),
                     )
                     .push(
-                        Text::new(value)
+                        Text::new(command)
                             .horizontal_alignment(Horizontal::Right)
                             .width(Length::Fill)
                             .font(Font::MONOSPACE)
