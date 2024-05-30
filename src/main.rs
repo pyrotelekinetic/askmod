@@ -1,3 +1,4 @@
+use argh::FromArgs;
 use iced::alignment::Horizontal;
 use iced::executor;
 use iced::widget::{Button, Column, Container, Row, Text};
@@ -9,6 +10,8 @@ use std::process::Command as StdCommand;
 #[derive(Default)]
 struct State {
     profiles: Vec<(String, String)>,
+    name: Option<String>,
+    command: Option<String>,
 }
 
 #[derive(Debug, Clone)]
@@ -16,14 +19,26 @@ struct Message {
     choice: usize,
 }
 
+#[derive(FromArgs, Default)]
+/// Launch a mod profile
+struct Args {
+    /// name to display in title
+    #[argh(option, short = 'n')]
+    name: Option<String>,
+
+    /// command to wrap
+    #[argh(option, short = 'c')]
+    command: Option<String>,
+
+    /// profile defs
+    #[argh(positional, greedy)]
+    profiles: Vec<String>,
+}
+
 pub fn main() -> iced::Result {
-    let mut args = std::env::args().skip(1);
-    let mut profiles = Vec::default();
-    while let (Some(name), Some(content)) = (args.next(), args.next()) {
-        profiles.push((name, content));
-    }
+    let args: Args = argh::from_env();
     State::run(Settings {
-        flags: State { profiles },
+        flags: args,
         window: window::Settings {
             position: window::Position::Centered,
             level: window::Level::AlwaysOnTop,
@@ -42,14 +57,29 @@ impl Application for State {
     type Executor = executor::Default;
     type Message = Message;
     type Theme = Theme;
-    type Flags = State;
+    type Flags = Args;
 
-    fn new(flags: Self) -> (Self, Command<Message>) {
-        (flags, Command::none())
+    fn new(flags: Self::Flags) -> (Self, Command<Message>) {
+        let profiles = flags
+            .profiles
+            .chunks(2)
+            .map(|c| match c {
+                [x, y] => (x.clone(), y.clone()),
+                _ => unreachable!(),
+            })
+            .collect();
+        (
+            State {
+                profiles,
+                command: flags.command,
+                name: flags.name,
+            },
+            Command::none(),
+        )
     }
 
     fn title(&self) -> String {
-        String::from("askmod")
+        self.name.clone().unwrap_or(String::from("askmod"))
     }
 
     fn theme(&self) -> Theme {
@@ -57,7 +87,7 @@ impl Application for State {
     }
 
     fn update(&mut self, message: Message) -> Command<Message> {
-        let command = self.profiles[message.choice].1.clone();
+        let (_, command) = self.profiles[message.choice].clone();
         Command::batch([
             window::close(window::Id::MAIN),
             Command::perform(
