@@ -28,6 +28,7 @@ in {
       thisPkg = self.packages.${pkgs.system}.default;
     in pkgs.mkShell {
       nativeBuildInputs = with pkgs; [
+        rustc
         cargo
         cargo-watch
         rustfmt
