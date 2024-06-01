@@ -4,8 +4,10 @@ use iced::executor;
 use iced::widget::{Button, Column, Container, Row, Text};
 use iced::window;
 use iced::{Alignment, Application, Command, Element, Font, Length, Settings, Theme};
-use std::os::unix::process::CommandExt;
 use std::process::Command as StdCommand;
+
+#[cfg(unix)]
+use std::os::unix::process::CommandExt;
 
 #[derive(Default)]
 struct State {
@@ -61,6 +63,33 @@ fn format_command(x: &str, y: Option<&str>) -> String {
     }
 }
 
+#[cfg(windows)]
+fn run_command(command: String) -> Command<Message> {
+    Command::batch([
+        window::close(window::Id::MAIN),
+        Command::perform(
+            async move { StdCommand::new("cmd").arg("/c").arg(command).spawn() },
+            |_| unreachable!(),
+        ),
+    ])
+}
+
+#[cfg(unix)]
+fn run_command(command: String) -> Command<Message> {
+    Command::batch([
+        window::close(window::Id::MAIN),
+        Command::perform(
+            async move {
+                StdCommand::new("sh")
+                    .arg("-c")
+                    .arg(format!("exec {}", command))
+                    .exec()
+            },
+            |_| unreachable!(),
+        ),
+    ])
+}
+
 impl Application for State {
     type Executor = executor::Default;
     type Message = Message;
@@ -94,18 +123,7 @@ impl Application for State {
     fn update(&mut self, message: Message) -> Command<Message> {
         let (_, value) = self.profiles[message.choice].clone();
         let command = format_command(&value, self.command.as_deref());
-        Command::batch([
-            window::close(window::Id::MAIN),
-            Command::perform(
-                async move {
-                    StdCommand::new("sh")
-                        .arg("-c")
-                        .arg(format!("exec {}", command))
-                        .exec()
-                },
-                |_| unreachable!(),
-            ),
-        ])
+        run_command(command)
     }
 
     fn view(&self) -> Element<Message> {
@@ -113,10 +131,7 @@ impl Application for State {
             |(index, (name, value))| {
                 let command = format_command(value, self.command.as_ref().map(|_| "%command%"));
                 let words = Row::new()
-                    .push(
-                        Text::new(name)
-                            .horizontal_alignment(Horizontal::Left)
-                    )
+                    .push(Text::new(name).horizontal_alignment(Horizontal::Left))
                     .push(
                         Text::new(command)
                             .horizontal_alignment(Horizontal::Right)
