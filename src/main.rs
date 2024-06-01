@@ -68,14 +68,11 @@ impl Application for State {
     type Flags = Args;
 
     fn new(flags: Self::Flags) -> (Self, Command<Message>) {
-        let profiles = flags
-            .profiles
-            .chunks(2)
-            .map(|c| match c {
-                [x, y] => (x.clone(), y.clone()),
-                _ => unreachable!(),
-            })
-            .collect();
+        let mut profiles = Vec::new();
+        let mut iter = flags.profiles.into_iter();
+        while let (Some(x), Some(y)) = (iter.next(), iter.next()) {
+            profiles.push((x, y));
+        }
         (
             State {
                 profiles,
