@@ -1,9 +1,11 @@
 use argh::FromArgs;
-use iced::alignment::Horizontal;
-use iced::executor;
-use iced::widget::{Button, Column, Container, Row, Text};
-use iced::window;
-use iced::{Alignment, Application, Command, Element, Font, Length, Settings, Theme};
+use iced::{
+    alignment::Horizontal,
+    executor,
+    widget::{Button, Column, Container, Row, Text},
+    window, Alignment, Application, Command, Element, Font, Length, Settings,
+    Theme,
+};
 use std::process::Command as StdCommand;
 
 #[cfg(unix)]
@@ -127,27 +129,34 @@ impl Application for State {
     }
 
     fn view(&self) -> Element<Message> {
-        let content = Column::with_children(self.profiles.iter().enumerate().map(
-            |(index, (name, value))| {
-                let command = format_command(value, self.command.as_ref().map(|_| "%command%"));
-                let words = Row::new()
-                    .push(Text::new(name).horizontal_alignment(Horizontal::Left))
-                    .push(
-                        Text::new(command)
-                            .horizontal_alignment(Horizontal::Right)
-                            .width(Length::Fill)
-                            .font(Font::MONOSPACE)
-                            .size(12),
-                    )
-                    .align_items(Alignment::Center)
-                    .width(Length::Fill);
-                Button::new(words)
-                    .on_press(Message { choice: index })
-                    .into()
-            },
-        ))
-        .spacing(10)
-        .align_items(Alignment::Center);
+        let content =
+            Column::with_children(self.profiles.iter().enumerate().map(
+                |(index, (name, value))| {
+                    let command = format_command(
+                        value,
+                        self.command.as_ref().map(|_| "%command%"),
+                    );
+                    let words = Row::new()
+                        .push(
+                            Text::new(name)
+                                .horizontal_alignment(Horizontal::Left),
+                        )
+                        .push(
+                            Text::new(command)
+                                .horizontal_alignment(Horizontal::Right)
+                                .width(Length::Fill)
+                                .font(Font::MONOSPACE)
+                                .size(12),
+                        )
+                        .align_items(Alignment::Center)
+                        .width(Length::Fill);
+                    Button::new(words)
+                        .on_press(Message { choice: index })
+                        .into()
+                },
+            ))
+            .spacing(10)
+            .align_items(Alignment::Center);
 
         Container::new(content)
             .width(Length::Fill)
